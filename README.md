@@ -4,8 +4,6 @@
 
 AI-Powered Content Generation at Your Fingertips
 
-![Last Commit](https://img.shields.io/github/last-commit/elyse502/QuickAI?style=flat-square) 
-![Languages](https://img.shields.io/github/languages/top/elyse502/QuickAI?style=flat-square&color=blue)
 ![License](https://img.shields.io/badge/license-ISC-blue?style=flat-square)
 ![Version](https://img.shields.io/badge/version-1.0.0-success?style=flat-square)
 
@@ -15,11 +13,10 @@ AI-Powered Content Generation at Your Fingertips
 ![Express](https://img.shields.io/badge/Express-5.1.0-000000?style=flat-square&logo=express&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=flat-square&logo=postgresql&logoColor=white)
 ![Node.js](https://img.shields.io/badge/Node.js-339933?style=flat-square&logo=node.js&logoColor=white)
-![OpenAI](https://img.shields.io/badge/OpenAI-412991?style=flat-square&logo=openai&logoColor=white)
+![Gemini](https://img.shields.io/badge/Gemini%20API-4285F4?style=flat-square&logo=google&logoColor=white)
 ![Clerk](https://img.shields.io/badge/Clerk-6C47FF?style=flat-square&logo=clerk&logoColor=white)
 
-## LIVE - DEMO 🌐
-Visit the 👉 [_LINK 🔗_](https://quick-ai-gray-eight.vercel.app/)
+**📍 Repository:** https://github.com/Hasan8936/quickAI
 
 </div>
 
@@ -102,7 +99,7 @@ Built with the PERN stack (PostgreSQL, Express, React, Node.js) and integrated w
 - **Node.js** - JavaScript runtime
 - **Express 5** - Web framework for Node.js
 - **PostgreSQL** - Relational database (via Neon)
-- **OpenAI API** - AI model integration
+- **Google Gemini API** - AI model integration
 - **Cloudinary** - Image and file management
 - **Multer** - File upload handling
 - **CORS** - Cross-origin resource sharing
@@ -178,8 +175,8 @@ QuickAI/
 
 1. Clone the repository:
 ```console
-git clone https://github.com/elyse502/QuickAI.git
-cd QuickAI
+git clone https://github.com/Hasan8936/quickAI.git
+cd quickAI
 ```
 
 2. Install client dependencies:
@@ -202,13 +199,14 @@ VITE_API_BASE_URL=http://localhost:3000
 
 **Server (.env)**
 ```env
-OPENAI_API_KEY=sk-your-openai-key
+GEMINI_API_KEY=your-gemini-api-key
 CLOUDINARY_CLOUD_NAME=your-cloud-name
 CLOUDINARY_API_KEY=your-api-key
 CLOUDINARY_API_SECRET=your-api-secret
 DATABASE_URL=your-postgres-connection-string
-CLERK_SECRET_KEY=sk_test_...
-PORT=5000
+CLERK_SECRET_KEY=sk_live_...
+CLERK_PUBLISHABLE_KEY=pk_live_...
+PORT=3000
 ```
 
 4. Start the development servers:
@@ -271,21 +269,11 @@ cd client && npm run dev
 
 ## Deployment
 
-### Frontend (Vercel)
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fyourusername%2FQuickAI%2Ftree%2Fmain%2Fclient)
-
-### Backend (Render/Vercel)
-Deploy with environment variables configured for:
-- Neon PostgreSQL database
-- OpenAI API keys
-- Cloudinary credentials
-- Clerk secrets
-
-### Database (Neon)
-```console
-# Recommended: Neon PostgreSQL
-https://neon.tech/
-```
+Detailed deployment guides are included in this repository:
+- **START_HERE_DEPLOYMENT.md** - Quick overview
+- **VERCEL_QUICK_START.md** - 5-minute deployment
+- **VERCEL_DEPLOYMENT_GUIDE.md** - Complete guide
+- **ENV_VARIABLES_GUIDE.md** - Credentials setup
 
 ---
 
@@ -313,20 +301,13 @@ We welcome contributions! Please follow these steps:
 
 ## License
 
-Distributed under the ISC License. See [`LICENSE`](https://github.com/elyse502/QuickAI/blob/main/LICENSE) for more information.
+Distributed under the ISC License. See [`LICENSE`](LICENSE) for more information.
 
 ---
 
 ## Support
 
-For support, email _frontend.master@outlook.com_ or create an issue in the GitHub repository.
-
----
-
-## 📞 Contact
-For any questions or support, please contact:
-- [Github](https://github.com/luukogod) | [Twitter](https://twitter.com/luukogod)
-- **Email**: <frontend.master@outlook.com>
+For support, create an issue in the [GitHub repository](https://github.com/Hasan8936/quickAI) or check the deployment guides included in this project.
 
 ---
 
@@ -334,9 +315,9 @@ For any questions or support, please contact:
 
 **QUICKAI** - Supercharge your creativity with AI! 🚀
 
-*Built with ❤️ using the PERN stack and cutting-edge AI technologies.*
+*Built with ❤️ using React, Express, PostgreSQL, and Google Gemini AI.*
 
-**Made with ❤️ by <i>@Luukogod</i>**
+**Repository:** https://github.com/Hasan8936/quickAI
 
 [⬆ Back to Top](#table-of-contents)
 

@@ -55,7 +55,7 @@ const Footer = () => {
       </div>
       <p className="pt-4 text-center text-xs md:text-sm pb-5">
         Copyright 2025 ©{" "}
-        <a target="_blank" href="https://elyse502.github.io/Elysee-Portfolio">
+        <a target="_blank" href="https://github.com/Hasan8936/quickAI">
           ElyséeDev
         </a>
         . All Right Reserved.
