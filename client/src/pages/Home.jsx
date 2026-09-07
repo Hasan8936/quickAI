@@ -4,6 +4,7 @@ import Hero from "../components/Hero";
 import Navbar from "../components/Navbar";
 import Plan from "../components/Plan";
 import Testimonial from "../components/Testimonial";
+import ErrorBoundary from "../components/ErrorBoundary";
 
 const Home = () => {
   return (
@@ -12,7 +13,9 @@ const Home = () => {
       <Hero />
       <AiTools />
       <Testimonial />
-      <Plan />
+      <ErrorBoundary>
+        <Plan />
+      </ErrorBoundary>
       <Footer />
     </>
   );
