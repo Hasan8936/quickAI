@@ -315,7 +315,7 @@ For support, create an issue in the [GitHub repository](https://github.com/Hasan
 
 **QUICKAI** - Supercharge your creativity with AI! 🚀
 
-*Built with ❤️ using React, Express, PostgreSQL, and Google Gemini AI.*
+
 
 **Repository:** https://github.com/Hasan8936/quickAI
 
