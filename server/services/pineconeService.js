@@ -8,7 +8,6 @@ export const initPinecone = async () => {
   try {
     pineconeClient = new Pinecone({
       apiKey: process.env.PINECONE_API_KEY,
-      environment: process.env.PINECONE_ENVIRONMENT,
     });
     console.log("✅ Pinecone initialized successfully");
     return pineconeClient;
@@ -71,11 +70,13 @@ export const deleteVectors = async (vectorIds, indexName = "quickai-rag") => {
 export const createIndexIfNotExists = async (indexName = "quickai-rag") => {
   try {
     const client = await initPinecone();
-    const indexes = await client.listIndexes();
 
-    const indexExists = indexes.indexes?.some((idx) => idx.name === indexName);
-
-    if (!indexExists) {
+    try {
+      // Try to get index stats to check if it exists
+      await client.index(indexName).describeIndexStats();
+      console.log(`✅ Pinecone index already exists: ${indexName}`);
+    } catch (error) {
+      // Index doesn't exist, create it
       await client.createIndex({
         name: indexName,
         dimension: 768,
@@ -88,8 +89,6 @@ export const createIndexIfNotExists = async (indexName = "quickai-rag") => {
         },
       });
       console.log(`✅ Created Pinecone index: ${indexName}`);
-    } else {
-      console.log(`✅ Pinecone index already exists: ${indexName}`);
     }
   } catch (error) {
     console.error("❌ Failed to create index:", error.message);
