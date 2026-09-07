@@ -3,6 +3,7 @@ import cors from "cors";
 import "dotenv/config";
 import { clerkMiddleware, requireAuth } from "@clerk/express";
 import aiRouter from "./routes/aiRoutes.js";
+import ragRouter from "./routes/ragRoutes.js";
 import connectCloudinary from "./configs/cloudinary.js";
 import userRouter from "./routes/userRoutes.js";
 
@@ -42,6 +43,7 @@ if (process.env.NODE_ENV !== 'test' && process.env.CLERK_SECRET_KEY &&
 
 app.use("/api/ai", aiRouter);
 app.use("/api/user", userRouter);
+app.use("/api/rag", ragRouter);
 
 const PORT = process.env.PORT || 3000;
 
