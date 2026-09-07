@@ -4,6 +4,7 @@ import "dotenv/config";
 import { clerkMiddleware, requireAuth } from "@clerk/express";
 import aiRouter from "./routes/aiRoutes.js";
 import ragRouter from "./routes/ragRoutes.js";
+import supportRouter from "./routes/supportRoutes.js";
 import connectCloudinary from "./configs/cloudinary.js";
 import userRouter from "./routes/userRoutes.js";
 
@@ -44,6 +45,7 @@ if (process.env.NODE_ENV !== 'test' && process.env.CLERK_SECRET_KEY &&
 app.use("/api/ai", aiRouter);
 app.use("/api/user", userRouter);
 app.use("/api/rag", ragRouter);
+app.use("/api/support", supportRouter);
 
 const PORT = process.env.PORT || 3000;
 
