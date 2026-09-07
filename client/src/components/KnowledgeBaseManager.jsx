@@ -2,8 +2,10 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { FileUp, Plus, Trash2, Search, Loader } from "lucide-react";
 import toast from "react-hot-toast";
+import { useAuth } from "@clerk/clerk-react";
 
 const KnowledgeBaseManager = () => {
+  const { getToken } = useAuth();
   const [kbs, setKbs] = useState([]);
   const [newKbName, setNewKbName] = useState("");
   const [newKbDesc, setNewKbDesc] = useState("");
@@ -21,17 +23,23 @@ const KnowledgeBaseManager = () => {
   // Load knowledge bases on mount
   useEffect(() => {
     fetchKnowledgeBases();
-  }, []);
+  }, [getToken]);
 
   const fetchKnowledgeBases = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${API_BASE_URL}/api/rag/kb`);
+      const token = await getToken();
+      const response = await axios.get(`${API_BASE_URL}/api/rag/kb`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       if (response.data.success) {
         setKbs(response.data.knowledge_bases);
       }
     } catch (error) {
       toast.error("Failed to load knowledge bases");
+      console.error("KB fetch error:", error);
     } finally {
       setLoading(false);
     }
@@ -45,10 +53,19 @@ const KnowledgeBaseManager = () => {
     }
 
     try {
-      const response = await axios.post(`${API_BASE_URL}/api/rag/kb`, {
-        name: newKbName,
-        description: newKbDesc,
-      });
+      const token = await getToken();
+      const response = await axios.post(
+        `${API_BASE_URL}/api/rag/kb`,
+        {
+          name: newKbName,
+          description: newKbDesc,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       if (response.data.success) {
         toast.success("Knowledge base created!");
@@ -80,6 +97,7 @@ const KnowledgeBaseManager = () => {
 
     try {
       setUploading(true);
+      const token = await getToken();
       const formData = new FormData();
       formData.append("document", uploadFile);
       formData.append("kb_id", selectedKb.id);
@@ -88,7 +106,10 @@ const KnowledgeBaseManager = () => {
         `${API_BASE_URL}/api/rag/upload`,
         formData,
         {
-          headers: { "Content-Type": "multipart/form-data" },
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
         }
       );
 
@@ -121,11 +142,20 @@ const KnowledgeBaseManager = () => {
 
     try {
       setSearching(true);
-      const response = await axios.post(`${API_BASE_URL}/api/rag/search`, {
-        kb_id: selectedKb.id,
-        query: searchQuery,
-        top_k: 5,
-      });
+      const token = await getToken();
+      const response = await axios.post(
+        `${API_BASE_URL}/api/rag/search`,
+        {
+          kb_id: selectedKb.id,
+          query: searchQuery,
+          top_k: 5,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       if (response.data.success) {
         setSearchResults(response.data.results);

@@ -2,8 +2,10 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Sparkles, Copy, Check } from "lucide-react";
 import toast from "react-hot-toast";
+import { useAuth } from "@clerk/clerk-react";
 
 const RAGGenerator = () => {
+  const { getToken } = useAuth();
   const [kbs, setKbs] = useState([]);
   const [selectedKb, setSelectedKb] = useState("");
   const [prompt, setPrompt] = useState("");
@@ -18,11 +20,16 @@ const RAGGenerator = () => {
 
   useEffect(() => {
     fetchKnowledgeBases();
-  }, []);
+  }, [getToken]);
 
   const fetchKnowledgeBases = async () => {
     try {
-      const res = await axios.get(`${API_BASE_URL}/api/rag/kb`);
+      const token = await getToken();
+      const res = await axios.get(`${API_BASE_URL}/api/rag/kb`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       if (res.data.success) {
         setKbs(res.data.knowledge_bases);
         if (res.data.knowledge_bases.length > 0) {
@@ -31,6 +38,7 @@ const RAGGenerator = () => {
       }
     } catch (error) {
       console.error("Failed to load knowledge bases:", error);
+      toast.error("Failed to load knowledge bases");
     }
   };
 
@@ -52,12 +60,21 @@ const RAGGenerator = () => {
       setResponse("");
       setSources([]);
 
-      const res = await axios.post(`${API_BASE_URL}/api/rag/generate`, {
-        kb_id: useRAG ? selectedKb : null,
-        prompt,
-        use_rag: useRAG,
-        temperature,
-      });
+      const token = await getToken();
+      const res = await axios.post(
+        `${API_BASE_URL}/api/rag/generate`,
+        {
+          kb_id: useRAG ? selectedKb : null,
+          prompt,
+          use_rag: useRAG,
+          temperature,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       if (res.data.success) {
         setResponse(res.data.response);
