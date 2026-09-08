@@ -70,6 +70,12 @@ const Community = () => {
     <div className="flex-1 h-full flex flex-col gap-4 p-6">
       Creations
       <div className="bg-white h-full w-full rounded-xl overflow-y-scroll">
+        {creations.length === 0 && (
+          <div className="flex flex-col items-center justify-center h-64 text-gray-400 gap-2">
+            <p className="text-lg font-medium">No creations yet</p>
+            <p className="text-sm">Generate and publish images to see them here</p>
+          </div>
+        )}
         {creations.map((creation, index) => (
           <div
             key={index}
