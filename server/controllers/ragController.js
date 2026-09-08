@@ -1,27 +1,12 @@
 import { v4 as uuidv4 } from "uuid";
 import sql from "../configs/db.js";
-import OpenAI from "openai";
+import { generateEmbeddingForSearch } from "../services/embeddingService.js";
 import {
-  processDocument,
-  prepareChunksForEmbedding,
-  generateContentHash,
-} from "../services/documentProcessor.js";
-import {
-  generateEmbedding,
-  generateBatchEmbeddings,
-  generateEmbeddingForSearch,
-} from "../services/embeddingService.js";
-import {
-  upsertVectors,
   queryVectors,
   deleteVectors,
   createIndexIfNotExists,
 } from "../services/pineconeService.js";
-
-const AI = new OpenAI({
-  apiKey: process.env.GEMINI_API_KEY,
-  baseURL: "https://generativelanguage.googleapis.com/v1beta/openai/",
-});
+import { indexDocument } from "../services/ragService.js";
 
 // Initialize Pinecone on startup
 try {
@@ -110,76 +95,20 @@ export const uploadDocument = async (req, res) => {
       });
     }
 
-    // Process document
-    const processed = await processDocument(file.buffer, file.originalname);
-    const contentHash = generateContentHash(processed.content);
+    const result = await indexDocument(kb_id, file);
 
-    // Check for duplicates
-    const existing = await sql`
-      SELECT id FROM documents
-      WHERE kb_id = ${kb_id} AND content_hash = ${contentHash}
-    `;
-
-    if (existing.length > 0) {
+    if (result.duplicate) {
       return res.json({
         success: false,
         message: "Document with same content already exists in this KB",
       });
     }
 
-    const docId = uuidv4();
-
-    // Save document to DB
-    await sql`
-      INSERT INTO documents (id, kb_id, filename, content, file_size, content_hash)
-      VALUES (${docId}, ${kb_id}, ${file.originalname}, ${processed.content}, ${file.size}, ${contentHash})
-    `;
-
-    // Prepare chunks for embedding
-    const chunksData = prepareChunksForEmbedding(
-      processed.chunks,
-      docId,
-      kb_id
-    );
-
-    // Generate embeddings
-    const embeddings = await generateBatchEmbeddings(
-      chunksData.map((c) => c.text)
-    );
-
-    // Prepare vectors for Pinecone
-    const vectors = embeddings.map((embedding, index) => ({
-      id: chunksData[index].id,
-      values: embedding,
-      metadata: {
-        ...chunksData[index].metadata,
-        text: chunksData[index].text,
-      },
-    }));
-
-    // Upsert to Pinecone
-    await upsertVectors(vectors);
-
-    // Save chunk metadata to DB
-    for (let i = 0; i < processed.chunks.length; i++) {
-      await sql`
-        INSERT INTO document_chunks (id, doc_id, chunk_text, chunk_index, vector_id, metadata)
-        VALUES (
-          ${uuidv4()},
-          ${docId},
-          ${processed.chunks[i]},
-          ${i},
-          ${vectors[i].id},
-          ${JSON.stringify(chunksData[i].metadata)}
-        )
-      `;
-    }
-
     res.json({
       success: true,
       message: "Document uploaded and indexed successfully",
-      doc_id: docId,
-      chunks_created: processed.chunks.length,
+      doc_id: result.doc_id,
+      chunks_created: result.chunks_created,
     });
   } catch (error) {
     console.error("Error uploading document:", error.message);
@@ -241,96 +170,6 @@ export const searchDocuments = async (req, res) => {
     });
   } catch (error) {
     console.error("Error searching documents:", error.message);
-    res.json({ success: false, message: error.message });
-  }
-};
-
-export const generateWithRAG = async (req, res) => {
-  try {
-    const { userId } = req.auth();
-    const { kb_id, prompt, use_rag = true, temperature = 0.7 } = req.body;
-
-    if (!prompt) {
-      return res.json({
-        success: false,
-        message: "Prompt is required",
-      });
-    }
-
-    let context = "";
-    let sources = [];
-
-    if (use_rag && kb_id) {
-      // Verify KB belongs to user
-      const kb = await sql`
-        SELECT id FROM knowledge_bases
-        WHERE id = ${kb_id} AND user_id = ${userId}
-      `;
-
-      if (kb.length === 0) {
-        return res.json({
-          success: false,
-          message: "Knowledge base not found",
-        });
-      }
-
-      // Search for relevant documents
-      const queryEmbedding = await generateEmbeddingForSearch(prompt);
-      const results = await queryVectors(queryEmbedding, 5, {
-        kb_id: kb_id,
-      });
-
-      if (results.length > 0) {
-        context = results
-          .map((r, idx) => `Source ${idx + 1}: ${r.metadata?.text}`)
-          .join("\n\n");
-
-        sources = results.map((r) => ({
-          id: r.id,
-          score: r.score,
-          doc_id: r.metadata?.doc_id,
-        }));
-      }
-    }
-
-    // Build the enhanced prompt
-    let enhancedPrompt = prompt;
-    if (context) {
-      enhancedPrompt = `Based on the following documents:\n\n${context}\n\nPlease answer this question: ${prompt}`;
-    }
-
-    // Generate response using Gemini
-    const response = await AI.chat.completions.create({
-      model: "gemini-2.0-flash",
-      messages: [
-        {
-          role: "user",
-          content: enhancedPrompt,
-        },
-      ],
-      temperature,
-      max_tokens: 1000,
-    });
-
-    const generatedContent = response.choices[0].message.content;
-
-    // Save to RAG query history
-    await sql`
-      INSERT INTO rag_queries (id, user_id, kb_id, query, response, sources)
-      VALUES (${uuidv4()}, ${userId}, ${kb_id || null}, ${prompt}, ${generatedContent}, ${JSON.stringify(
-        sources
-      )})
-    `;
-
-    res.json({
-      success: true,
-      message: "Response generated successfully",
-      response: generatedContent,
-      sources: sources.length > 0 ? sources : null,
-      used_rag: use_rag && context.length > 0,
-    });
-  } catch (error) {
-    console.error("Error generating with RAG:", error.message);
     res.json({ success: false, message: error.message });
   }
 };
