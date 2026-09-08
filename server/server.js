@@ -28,7 +28,12 @@ app.use(express.json());
 const clerkConfigured = Boolean(process.env.CLERK_SECRET_KEY);
 
 if (clerkConfigured) {
-    app.use(clerkMiddleware());
+    // Support both CLERK_PUBLISHABLE_KEY and VITE_CLERK_PUBLISHABLE_KEY
+    // (Vercel server projects often have the VITE_ prefixed version)
+    app.use(clerkMiddleware({
+        publishableKey: process.env.CLERK_PUBLISHABLE_KEY || process.env.VITE_CLERK_PUBLISHABLE_KEY,
+        secretKey: process.env.CLERK_SECRET_KEY,
+    }));
 } else {
     // Mock auth middleware for local development without Clerk keys
     app.use((req, res, next) => {
