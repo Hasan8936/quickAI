@@ -21,7 +21,7 @@ const navItems = [
   { to: "/ai/remove-background", label: "Remove Background", Icon: Eraser },
   { to: "/ai/remove-object", label: "Remove Object", Icon: Scissors },
   { to: "/ai/review-resume", label: "Review Resume", Icon: FileText },
-  { to: "/ai/rag", label: "Knowledge Base (RAG)", Icon: Database },
+  { to: "/ai/rag", label: "Support Assistant", Icon: Database },
   { to: "/ai/community", label: "Community", Icon: Users },
 ];
 

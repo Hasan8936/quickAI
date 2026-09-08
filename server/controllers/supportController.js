@@ -1,12 +1,21 @@
 import { v4 as uuidv4 } from "uuid";
 import sql from "../configs/db.js";
 import OpenAI from "openai";
-import { processDocument } from "../services/documentProcessor.js";
+import {
+  getOrCreateKnowledgeBase,
+  indexDocument,
+  retrieveContext,
+} from "../services/ragService.js";
 
 const AI = new OpenAI({
   apiKey: process.env.GEMINI_API_KEY,
   baseURL: "https://generativelanguage.googleapis.com/v1beta/openai/",
 });
+
+// Every user gets one persistent knowledge base backing their Support
+// Assistant, so previously uploaded PDFs stay searchable across questions
+// without needing to be re-uploaded each time.
+const SUPPORT_KB_NAME = "Support Assistant";
 
 export const askQuestion = async (req, res) => {
   try {
@@ -21,21 +30,26 @@ export const askQuestion = async (req, res) => {
       });
     }
 
-    let documentContent = "";
+    const kbId = await getOrCreateKnowledgeBase(
+      userId,
+      SUPPORT_KB_NAME,
+      "Documents uploaded to the Support Assistant"
+    );
 
-    // Process uploaded document if provided
+    let indexResult = null;
     if (file) {
-      const processed = await processDocument(file.buffer, file.originalname);
-      documentContent = processed.content;
+      indexResult = await indexDocument(kbId, file);
     }
 
-    // Build the prompt
+    // Retrieve the most relevant chunks from everything this user has ever
+    // uploaded to the Support Assistant, not just the file from this request.
+    const { context, sources } = await retrieveContext(kbId, question, 5);
+
     let finalPrompt = question;
-    if (documentContent) {
-      finalPrompt = `Based on the following document content:\n\n${documentContent}\n\nPlease answer this question: ${question}`;
+    if (context) {
+      finalPrompt = `Based on the following document excerpts:\n\n${context}\n\nPlease answer this question: ${question}`;
     }
 
-    // Generate response using Gemini
     const response = await AI.chat.completions.create({
       model: "gemini-2.0-flash",
       messages: [
@@ -62,6 +76,13 @@ export const askQuestion = async (req, res) => {
       success: true,
       message: "Response generated successfully",
       response: generatedResponse,
+      used_rag: Boolean(context),
+      sources: sources.length > 0 ? sources : null,
+      document_indexed:
+        indexResult && !indexResult.duplicate
+          ? indexResult.chunks_created
+          : undefined,
+      document_already_indexed: indexResult?.duplicate || undefined,
     });
   } catch (error) {
     console.error("Error in support assistant:", error.message);

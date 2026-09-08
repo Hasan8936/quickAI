@@ -5,7 +5,6 @@ import {
   listKnowledgeBases,
   uploadDocument,
   searchDocuments,
-  generateWithRAG,
   deleteDocument,
   getKnowledgeBaseStats,
 } from "../controllers/ragController.js";
@@ -37,8 +36,7 @@ router.get("/kb/:kb_id/stats", getKnowledgeBaseStats);
 router.post("/upload", upload.single("document"), uploadDocument);
 router.delete("/documents/:doc_id", deleteDocument);
 
-// Search and Generation Routes
+// Search Routes
 router.post("/search", searchDocuments);
-router.post("/generate", generateWithRAG);
 
 export default router;

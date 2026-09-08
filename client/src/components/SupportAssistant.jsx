@@ -12,6 +12,8 @@ const SupportAssistant = () => {
   const [response, setResponse] = useState("");
   const [copied, setCopied] = useState(false);
   const [temperature, setTemperature] = useState(0.7);
+  const [sourceCount, setSourceCount] = useState(0);
+  const [usedRag, setUsedRag] = useState(false);
 
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
 
@@ -61,7 +63,22 @@ const SupportAssistant = () => {
 
       if (res.data.success) {
         setResponse(res.data.response);
-        toast.success("Response generated successfully!");
+        setUsedRag(Boolean(res.data.used_rag));
+        setSourceCount(res.data.sources?.length || 0);
+
+        if (res.data.document_indexed) {
+          toast.success(
+            `Document indexed (${res.data.document_indexed} chunks) — future questions will search it automatically`
+          );
+          // No need to keep resending the same file; it now lives in the
+          // knowledge base and will be retrieved for future questions.
+          setUploadedFile(null);
+        } else if (res.data.document_already_indexed) {
+          toast.success("This document is already indexed");
+          setUploadedFile(null);
+        } else {
+          toast.success("Response generated successfully!");
+        }
       } else {
         toast.error(res.data.message || "Failed to get response");
       }
@@ -122,7 +139,9 @@ const SupportAssistant = () => {
               </div>
             )}
             <p className="text-xs text-gray-600">
-              Upload a PDF or text file to ask questions about its content. Your document is processed instantly.
+              Upload a PDF or text file — it's chunked, embedded, and indexed into your
+              personal knowledge base, so you can keep asking follow-up questions about
+              it (or any previously uploaded document) without re-uploading.
             </p>
           </div>
         </div>
@@ -174,7 +193,15 @@ const SupportAssistant = () => {
         {response && (
           <div className="mt-8 pt-8 border-t border-gray-200">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-800">Response</h3>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-800">Response</h3>
+                {usedRag && (
+                  <p className="text-xs text-indigo-600 mt-1">
+                    Grounded in {sourceCount} matching excerpt{sourceCount === 1 ? "" : "s"}{" "}
+                    from your knowledge base
+                  </p>
+                )}
+              </div>
               <button
                 onClick={handleCopy}
                 className="flex items-center gap-2 px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition text-sm"
