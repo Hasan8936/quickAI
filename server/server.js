@@ -22,13 +22,10 @@ try {
 app.use(cors());
 app.use(express.json());
 
-// Use real Clerk auth whenever keys are configured, regardless of whether
-// they're Clerk test-mode (sk_test_...) or live (sk_live_...) keys — both
-// are real, working Clerk credentials. Only fall back to a mock user when
-// no keys are configured at all (e.g. running the server with no .env).
-const clerkConfigured = Boolean(
-    process.env.CLERK_SECRET_KEY && process.env.CLERK_PUBLISHABLE_KEY
-);
+// Use real Clerk auth whenever the secret key is configured. The server only
+// needs CLERK_SECRET_KEY (the publishable key is client-side only). Fall back
+// to a mock user only when no key is configured at all (local dev without .env).
+const clerkConfigured = Boolean(process.env.CLERK_SECRET_KEY);
 
 if (clerkConfigured) {
     app.use(clerkMiddleware());
