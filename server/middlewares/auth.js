@@ -4,7 +4,20 @@ import { clerkClient } from "@clerk/express";
 export const auth = async (req, res, next) => {
   try {
     const { userId, has } = await req.auth();
-    const hasPremiumPlan = await has({ plan: "premium" });
+
+    // Clerk Billing isn't enabled on this instance, so has({ plan }) throws
+    // (e.g. "Not Found") instead of returning false. Treat that the same as
+    // "not on the premium plan" instead of failing the whole request.
+    let hasPremiumPlan = false;
+    try {
+      hasPremiumPlan = await has({ plan: "premium" });
+    } catch (billingError) {
+      console.log(
+        "⚠️ Billing plan check unavailable, defaulting to free plan:",
+        billingError.message
+      );
+      hasPremiumPlan = false;
+    }
 
     const user = await clerkClient.users.getUser(userId);
 
