@@ -6,6 +6,12 @@ import {
   indexDocument,
   retrieveContext,
 } from "../services/ragService.js";
+import { createIndexIfNotExists } from "../services/pineconeService.js";
+
+// Ensure Pinecone index exists on startup (non-blocking)
+createIndexIfNotExists().catch((err) =>
+  console.log("⚠️ Pinecone index init warning:", err.message)
+);
 
 const AI = new OpenAI({
   apiKey: process.env.GEMINI_API_KEY,

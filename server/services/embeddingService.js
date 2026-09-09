@@ -4,7 +4,7 @@ let genAI = null;
 
 const initGenAI = () => {
   if (!genAI) {
-    genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
+    genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY || process.env.GEMINI_API_KEY);
   }
   return genAI;
 };
