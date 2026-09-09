@@ -5,6 +5,10 @@ export const auth = async (req, res, next) => {
   try {
     const { userId, has } = await req.auth();
 
+    if (!userId) {
+      return res.json({ success: false, message: "Unauthorized. Please sign in." });
+    }
+
     // Clerk Billing isn't enabled on this instance, so has({ plan }) throws
     // (e.g. "Not Found") instead of returning false. Treat that the same as
     // "not on the premium plan" instead of failing the whole request.
@@ -19,7 +23,10 @@ export const auth = async (req, res, next) => {
       hasPremiumPlan = false;
     }
 
-    const user = await clerkClient.users.getUser(userId);
+    const user = await clerkClient.users.getUser(userId).catch((err) => {
+      console.error(`❌ clerkClient.users.getUser failed for userId=${userId}:`, err.message);
+      throw err;
+    });
 
     if (!hasPremiumPlan && user.privateMetadata.free_usage) {
       req.free_usage = user.privateMetadata.free_usage;
