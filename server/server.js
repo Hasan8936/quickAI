@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors";
 import "dotenv/config";
-import { clerkMiddleware, requireAuth } from "@clerk/express";
+import { clerkMiddleware } from "@clerk/express";
 import aiRouter from "./routes/aiRoutes.js";
 import ragRouter from "./routes/ragRoutes.js";
 import supportRouter from "./routes/supportRoutes.js";
@@ -44,10 +44,10 @@ if (clerkConfigured) {
 
 app.get("/", (req, res) => res.send("Server is Live!"));
 
-// Only apply requireAuth if Clerk is actually configured and we're not running tests
-if (process.env.NODE_ENV !== 'test' && clerkConfigured) {
-    app.use(requireAuth());
-}
+// Auth is enforced per-route via the custom `auth` middleware (middlewares/auth.js),
+// which calls req.auth() and returns {success:false, message} on failure — no redirect.
+// Using a global requireAuth() here caused Clerk to redirect API requests to its
+// sign-in page instead of returning 401, breaking all API calls.
 
 app.use("/api/ai", aiRouter);
 app.use("/api/user", userRouter);
