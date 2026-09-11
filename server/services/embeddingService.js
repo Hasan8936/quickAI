@@ -12,7 +12,8 @@ const initGenAI = () => {
 export const generateEmbedding = async (text) => {
   try {
     const ai = initGenAI();
-    const model = ai.getGenerativeModel({ model: "embedding-001" });
+    // text-embedding-004 is the current stable model (768 dims, same as embedding-001)
+    const model = ai.getGenerativeModel({ model: "text-embedding-004" });
 
     const result = await model.embedContent(text);
     const embedding = result.embedding.values;

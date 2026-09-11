@@ -8,12 +8,10 @@ import {
 } from "../services/pineconeService.js";
 import { indexDocument } from "../services/ragService.js";
 
-// Initialize Pinecone on startup
-try {
-  await createIndexIfNotExists();
-} catch (error) {
+// Non-blocking Pinecone index init — avoids stalling cold starts on Vercel.
+createIndexIfNotExists().catch((error) => {
   console.log("⚠️ Pinecone initialization warning:", error.message);
-}
+});
 
 export const createKnowledgeBase = async (req, res) => {
   try {

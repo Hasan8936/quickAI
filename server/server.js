@@ -61,3 +61,8 @@ app.listen(PORT, () => {
         `Server is running on port ${PORT} => http://localhost:${PORT} 🍽️`
     );
 });
+
+// Required for Vercel serverless: export the Express app as the default handler.
+// Without this, @vercel/node has no request handler to invoke and returns 404
+// for every route in production.
+export default app;
