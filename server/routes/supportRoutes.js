@@ -1,5 +1,6 @@
 import express from "express";
 import multer from "multer";
+import { auth } from "../middlewares/auth.js";
 import { askQuestion } from "../controllers/supportController.js";
 
 const router = express.Router();
@@ -21,6 +22,6 @@ const upload = multer({
 });
 
 // Support Assistant Routes
-router.post("/ask", upload.single("document"), askQuestion);
+router.post("/ask", auth, upload.single("document"), askQuestion);
 
 export default router;

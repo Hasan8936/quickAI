@@ -1,5 +1,6 @@
 import express from "express";
 import multer from "multer";
+import { auth } from "../middlewares/auth.js";
 import {
   createKnowledgeBase,
   listKnowledgeBases,
@@ -28,15 +29,15 @@ const upload = multer({
 });
 
 // Knowledge Base Routes
-router.post("/kb", createKnowledgeBase);
-router.get("/kb", listKnowledgeBases);
-router.get("/kb/:kb_id/stats", getKnowledgeBaseStats);
+router.post("/kb", auth, createKnowledgeBase);
+router.get("/kb", auth, listKnowledgeBases);
+router.get("/kb/:kb_id/stats", auth, getKnowledgeBaseStats);
 
 // Document Routes
-router.post("/upload", upload.single("document"), uploadDocument);
-router.delete("/documents/:doc_id", deleteDocument);
+router.post("/upload", auth, upload.single("document"), uploadDocument);
+router.delete("/documents/:doc_id", auth, deleteDocument);
 
 // Search Routes
-router.post("/search", searchDocuments);
+router.post("/search", auth, searchDocuments);
 
 export default router;
