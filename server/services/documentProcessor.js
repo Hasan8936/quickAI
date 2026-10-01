@@ -26,6 +26,10 @@ export const chunkText = (text, chunkSize = CHUNK_SIZE, overlap = CHUNK_OVERLAP)
       chunks.push(chunk);
     }
 
+    if (endIdx === text.length) {
+      break;
+    }
+
     startIdx = endIdx - overlap;
   }
 
@@ -36,9 +40,11 @@ export const processDocument = async (fileBuffer, filename) => {
   try {
     let content = "";
 
-    if (filename.endsWith(".pdf")) {
+    const normalizedFilename = filename.toLowerCase();
+
+    if (normalizedFilename.endsWith(".pdf")) {
       content = await extractTextFromPDF(fileBuffer);
-    } else if (filename.endsWith(".txt")) {
+    } else if (normalizedFilename.endsWith(".txt")) {
       content = fileBuffer.toString("utf-8");
     } else {
       throw new Error("Unsupported file format. Only PDF and TXT are supported.");

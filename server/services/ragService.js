@@ -100,7 +100,9 @@ export const indexDocument = async (kbId, file) => {
  */
 export const retrieveContext = async (kbId, query, topK = 5) => {
   const queryEmbedding = await generateEmbeddingForSearch(query);
-  const results = await queryVectors(queryEmbedding, topK, { kb_id: kbId });
+  const results = await queryVectors(queryEmbedding, topK, {
+    kb_id: { $eq: kbId },
+  });
 
   if (!results || results.length === 0) {
     return { context: "", sources: [] };

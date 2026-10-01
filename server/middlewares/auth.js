@@ -9,6 +9,15 @@ export const auth = async (req, res, next) => {
       return res.json({ success: false, message: "Unauthorized. Please sign in." });
     }
 
+    // server.js installs deterministic mock auth for local development when
+    // Clerk is not configured. Do not call Clerk's API in that mode: the
+    // lookup fails (often as a misleading 404) and blocks RAG requests.
+    if (!process.env.CLERK_SECRET_KEY) {
+      req.free_usage = 0;
+      req.plan = "free";
+      return next();
+    }
+
     // Clerk Billing isn't enabled on this instance, so has({ plan }) throws
     // (e.g. "Not Found") instead of returning false. Treat that the same as
     // "not on the premium plan" instead of failing the whole request.

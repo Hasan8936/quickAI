@@ -144,7 +144,7 @@ export const searchDocuments = async (req, res) => {
 
     // Search in Pinecone with KB filter
     const results = await queryVectors(queryEmbedding, top_k, {
-      kb_id: kb_id,
+      kb_id: { $eq: kb_id },
     });
 
     if (results.length === 0) {

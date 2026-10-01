@@ -43,6 +43,9 @@ if (clerkConfigured) {
 }
 
 app.get("/", (req, res) => res.send("Server is Live!"));
+app.get("/api/health", (req, res) => {
+    res.json({ success: true, status: "ok" });
+});
 
 // Auth is enforced per-route via the custom `auth` middleware (middlewares/auth.js),
 // which calls req.auth() and returns {success:false, message} on failure — no redirect.
@@ -53,6 +56,21 @@ app.use("/api/ai", aiRouter);
 app.use("/api/user", userRouter);
 app.use("/api/rag", ragRouter);
 app.use("/api/support", supportRouter);
+
+// Keep API failures JSON-shaped instead of returning an HTML 404 page. This
+// makes frontend errors actionable and prevents SPA fallbacks from masking a
+// missing backend route.
+app.use("/api", (req, res) => {
+    res.status(404).json({ success: false, message: "API route not found" });
+});
+
+app.use((error, req, res, next) => {
+    console.error("Unhandled request error:", error.message);
+    res.status(error.statusCode || 500).json({
+        success: false,
+        message: error.message || "Internal server error",
+    });
+});
 
 const PORT = process.env.PORT || 3000;
 
